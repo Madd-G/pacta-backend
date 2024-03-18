@@ -7,14 +7,16 @@ const db = admin.firestore();
 exports.addUser = functions.https.onRequest(async (req, res) => {
     cors(req, res, async () => {
         try {
-            const { id, username, email, role, profileImage } = req.body;
+            const { id, username, email, role, profileImage, phoneNumber, gender } = req.body;
 
             const userData = {
                 id,
                 username,
                 email,
                 role,
-                profileImage
+                profileImage,
+                phoneNumber,
+                gender,
             };
 
             await db.collection('users').doc(id).set({
@@ -23,6 +25,8 @@ exports.addUser = functions.https.onRequest(async (req, res) => {
                 email,
                 role,
                 profileImage,
+                phoneNumber,
+                gender,
             });
 
             return res.status(201).json({ code: 1, userData, message: 'Adding user successful' });
