@@ -9,6 +9,27 @@ exports.addUser = functions.https.onRequest(async (req, res) => {
         try {
             const { id, username, email, role, profileImage, phoneNumber, gender } = req.body;
 
+            // Cek apakah pengguna sudah terdaftar di collection users
+            const userRef = await db.collection('users').doc(id).get();
+            if (userRef.exists) {
+                const userData = userRef.data();
+                return res.status(200).json({
+                    code: 1,
+                    message: 'User already exists',
+                    userData: userData
+                });
+            }
+
+            // Cek apakah pengguna sudah terdaftar di collection consultants
+            const consultantRef = await db.collection('consultants').doc(id).get();
+            if (consultantRef.exists) {
+                return res.status(401).json({
+                    code: -1,
+                    message: 'You are already registered as a consultant. Please sign in as a consultant.',
+
+                });
+            }
+
             const userData = {
                 id,
                 username,
@@ -19,15 +40,7 @@ exports.addUser = functions.https.onRequest(async (req, res) => {
                 gender,
             };
 
-            await db.collection('users').doc(id).set({
-                id,
-                username,
-                email,
-                role,
-                profileImage,
-                phoneNumber,
-                gender,
-            });
+            await db.collection('users').doc(id).set(userData);
 
             return res.status(201).json({ code: 1, userData, message: 'Adding user successful' });
         } catch (error) {
